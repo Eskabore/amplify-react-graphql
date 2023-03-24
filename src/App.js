@@ -1,3 +1,7 @@
+// This file contains the code for the front end of the application. The code is written in JavaScript.
+// The following functions are used: useState, useEffect, Storage, API, listNotes, createNote, deleteNote.
+// The following components are used: Button, Flex, Heading, Image, Text, TextField, View, withAuthenticator.
+
 import React, { useState, useEffect } from "react";
 import "./App.css";
 import "@aws-amplify/ui-react/styles.css";
@@ -25,6 +29,7 @@ const App = ({ signOut }) => {
     fetchNotes();
   }, []);
 
+  // Function to fetch notes from the API and store them in the notes state
   async function fetchNotes() {
     const apiData = await API.graphql({ query: listNotes });
     const notesFromAPI = apiData.data.listNotes.items;
@@ -40,6 +45,8 @@ const App = ({ signOut }) => {
     setNotes(notesFromAPI);
   }
 
+
+  // Create a note
   async function createNote(event) {
     event.preventDefault();
     const form = new FormData(event.target);
@@ -49,7 +56,9 @@ const App = ({ signOut }) => {
       description: form.get("description"),
       image: image.name,
     };
+    // If there is an image, upload it to S3
     if (!!data.image) await Storage.put(data.name, image);
+    // Create a note in the database
     await API.graphql({
       query: createNoteMutation,
       variables: { input: data },
@@ -57,6 +66,10 @@ const App = ({ signOut }) => {
     fetchNotes();
     event.target.reset();
   }
+
+
+  // Deletes a note by removing it from the notes array and then removing the note file from S3.
+  // Note: This function is not used in the tutorial.
 
   async function deleteNote({ id, name }) {
     const newNotes = notes.filter((note) => note.id !== id);
@@ -67,6 +80,11 @@ const App = ({ signOut }) => {
       variables: { input: { id } },
     });
   }
+
+// This function handles the creation of a note.
+// It is called when the user clicks the Create Note button.
+// It takes the values from the form and creates a note from them.
+// It then resets the form.
 
   return (
     <View className="App">
